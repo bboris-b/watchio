@@ -237,7 +237,7 @@ class SmartProviderManager {
         // Configuration required: Get your free API key at https://aistudio.google.com/app/apikey
         const API_KEY = 'AIzaSyD3hf0zLaH9nQr5usubL8v75gY8bd_tgfg';
         
-        if (API_KEY === 'AIzaSyD3hf0zLaH9nQr5usubL8v75gY8bd_tgfg') {
+        if (API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
             throw new Error('Gemini API key not configured. Get yours at https://aistudio.google.com/app/apikey');
         }
         
@@ -941,6 +941,9 @@ async function generateSummary() {
         content.classList.remove('hidden');
         
         showMessage(`Summary generated using ${result.provider} (Quality: ${result.quality}/10)`, 'success');
+        if (window.analyticsEnabled) {
+            providerTracker.trackProviderCall(result.provider, true, 2000, result.complexity);
+        }
         // Track successful summary generation
         firebaseTracker.track(result.provider, true, 2000, result.complexity);
 
@@ -1321,7 +1324,7 @@ async callGemini(prompt) {
     const startTime = Date.now();
     const API_KEY = 'AIzaSyD3hf0zLaH9nQr5usubL8v75gY8bd_tgfg'; // Configure this
     
-    if (API_KEY === 'AIzaSyD3hf0zLaH9nQr5usubL8v75gY8bd_tgfg') {
+    if (API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
         const error = 'Gemini API key not configured';
         providerTracker.trackProviderCall('gemini_free', false, 0, 'unknown', error);
         throw new Error(error);
