@@ -265,7 +265,7 @@ class SmartProviderManager {
         // Configuration required: Get your free token at  
         const HF_TOKEN = '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';
         
-        if (HF_TOKEN === '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') {
+        if (HF_TOKEN === 'YOUR_HUGGINGFACE_TOKEN_HERE') {
             throw new Error('HuggingFace token not configured. Get yours at https://huggingface.co/settings/tokens');
         }
         
