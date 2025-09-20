@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 AI Provider Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-title {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-icon {
+            font-size: 1.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-change {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .stat-change.positive {
+            color: #10b981;
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .provider-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .provider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .provider-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .provider-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-online {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .status-offline {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .status-limited {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .provider-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .metric {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+        
+        .chart {
+            height: 300px;
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(0deg, #3b82f6, #10b981);
+            margin: 0 2px;
+            border-radius: 2px 2px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-bar:hover {
+            opacity: 0.8;
+        }
+        
+        .activity-feed {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .activity-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+        
+        .activity-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .activity-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .activity-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-time {
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            color: #3b82f6;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .provider-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .provider-metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1 class="title">🔍 AI Provider Analytics</h1>
+            <p class="subtitle">Real-time monitoring and performance tracking</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn active" onclick="setTimeRange('1h')">Last Hour</button>
+            <button class="btn" onclick="setTimeRange('24h')">Last 24h</button>
+            <button class="btn" onclick="setTimeRange('7d')">Last 7 days</button>
+            <button class="btn" onclick="setTimeRange('30d')">Last 30 days</button>
+            <button class="btn" onclick="exportData()">📊 Export Data</button>
+            <button class="btn" onclick="clearData()">🗑️ Clear Stats</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Requests</span>
+                    <span class="stat-icon">🚀</span>
+                </div>
+                <div class="stat-value" id="totalRequests">0</div>
+                <div class="stat-change positive" id="requestsChange">+0% from yesterday</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Success Rate</span>
+                    <span class="stat-icon">✅</span>
+                </div>
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-change positive" id="successChange">+0% from yesterday</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Avg Response Time</span>
+                    <span class="stat-icon">⚡</span>
+                </div>
+                <div class="stat-value" id="avgResponseTime">0ms</div>
+                <div class="stat-change positive" id="responseTimeChange">-0ms from yesterday</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Active Providers</span>
+                    <span class="stat-icon">🔌</span>
+                </div>
+                <div class="stat-value" id="activeProviders">0</div>
+                <div class="stat-change" id="providersChange">of 4 total</div>
+            </div>
+        </div>
+
+        <div class="provider-grid">
+            <div class="provider-card">
+                <div class="provider-header">
+                    <span class="provider-name">🤖 Enhanced Template</span>
+                    <span class="provider-status status-online" id="status-enhanced">ONLINE</span>
+                </div>
+                <div class="provider-metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="enhanced-requests">0</div>
+                        <div class="metric-label">Requests</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="enhanced-success">100%</div>
+                        <div class="metric-label">Success</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="enhanced-latency">50ms</div>
+                        <div class="metric-label">Avg Latency</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="enhanced-progress" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="provider-card">
+                <div class="provider-header">
+                    <span class="provider-name">🏠 Ollama Local</span>
+                    <span class="provider-status status-offline" id="status-ollama">OFFLINE</span>
+                </div>
+                <div class="provider-metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="ollama-requests">0</div>
+                        <div class="metric-label">Requests</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="ollama-success">0%</div>
+                        <div class="metric-label">Success</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="ollama-latency">0ms</div>
+                        <div class="metric-label">Avg Latency</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="ollama-progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="provider-card">
+                <div class="provider-header">
+                    <span class="provider-name">🧠 Gemini Free</span>
+                    <span class="provider-status status-limited" id="status-gemini">LIMITED</span>
+                </div>
+                <div class="provider-metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="gemini-requests">0</div>
+                        <div class="metric-label">Requests</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="gemini-success">0%</div>
+                        <div class="metric-label">Success</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="gemini-latency">0ms</div>
+                        <div class="metric-label">Avg Latency</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="gemini-progress" style="width: 45%"></div>
+                </div>
+            </div>
+
+            <div class="provider-card">
+                <div class="provider-header">
+                    <span class="provider-name">🤗 HuggingFace</span>
+                    <span class="provider-status status-online" id="status-huggingface">ONLINE</span>
+                </div>
+                <div class="provider-metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="huggingface-requests">0</div>
+                        <div class="metric-label">Requests</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="huggingface-success">0%</div>
+                        <div class="metric-label">Success</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="huggingface-latency">0ms</div>
+                        <div class="metric-label">Avg Latency</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="huggingface-progress" style="width: 80%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3 class="chart-title">📈 Requests Over Time</h3>
+            <div class="chart" id="requestsChart">
+                <!-- Chart bars will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="activity-feed">
+            <h3 class="activity-title">📋 Recent Activity</h3>
+            <div id="activityFeed">
+                <!-- Activity items will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard Analytics System
+        class ProviderAnalytics {
+            constructor() {
+                this.data = this.loadData();
+                this.timeRange = '1h';
+                this.updateInterval = null;
+                this.init();
+            }
+
+            init() {
+                this.startRealTimeUpdates();
+                this.generateChart();
+                this.updateDashboard();
+                
+                // Listen for messages from the main app
+                window.addEventListener('message', (event) => {
+                    if (event.data.type === 'provider_call') {
+                        this.recordProviderCall(event.data);
+                    }
+                });
+            }
+
+            loadData() {
+                const saved = localStorage.getItem('provider_analytics');
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+                
+                return {
+                    calls: [],
+                    providers: {
+                        enhanced_template: { requests: 0, successes: 0, totalTime: 0, status: 'online' },
+                        ollama_local: { requests: 0, successes: 0, totalTime: 0, status: 'offline' },
+                        gemini_free: { requests: 0, successes: 0, totalTime: 0, status: 'limited' },
+                        huggingface: { requests: 0, successes: 0, totalTime: 0, status: 'online' }
+                    }
+                };
+            }
+
+            saveData() {
+                localStorage.setItem('provider_analytics', JSON.stringify(this.data));
+            }
+
+            recordProviderCall(callData) {
+                const timestamp = Date.now();
+                
+                const call = {
+                    timestamp,
+                    provider: callData.provider,
+                    success: callData.success,
+                    responseTime: callData.responseTime || 0,
+                    complexity: callData.complexity || 'simple',
+                    error: callData.error || null
+                };
+
+                this.data.calls.push(call);
+                
+                // Update provider stats
+                const provider = this.data.providers[callData.provider];
+                if (provider) {
+                    provider.requests++;
+                    if (callData.success) {
+                        provider.successes++;
+                    }
+                    provider.totalTime += call.responseTime;
+                }
+
+                // Keep only last 1000 calls to prevent memory issues
+                if (this.data.calls.length > 1000) {
+                    this.data.calls = this.data.calls.slice(-1000);
+                }
+
+                this.saveData();
+                this.updateDashboard();
+                this.addActivityItem(call);
+            }
+
+            getFilteredCalls() {
+                const now = Date.now();
+                const timeRanges = {
+                    '1h': 60 * 60 * 1000,
+                    '24h': 24 * 60 * 60 * 1000,
+                    '7d': 7 * 24 * 60 * 60 * 1000,
+                    '30d': 30 * 24 * 60 * 60 * 1000
+                };
+
+                const timeLimit = now - timeRanges[this.timeRange];
+                return this.data.calls.filter(call => call.timestamp > timeLimit);
+            }
+
+            updateDashboard() {
+                const calls = this.getFilteredCalls();
+                const successfulCalls = calls.filter(c => c.success);
+                
+                // Total requests
+                document.getElementById('totalRequests').textContent = calls.length;
+                
+                // Success rate
+                const successRate = calls.length > 0 ? Math.round((successfulCalls.length / calls.length) * 100) : 0;
+                document.getElementById('successRate').textContent = successRate + '%';
+                
+                // Average response time
+                const avgResponseTime = successfulCalls.length > 0 
+                    ? Math.round(successfulCalls.reduce((sum, c) => sum + c.responseTime, 0) / successfulCalls.length)
+                    : 0;
+                document.getElementById('avgResponseTime').textContent = avgResponseTime + 'ms';
+                
+                // Active providers
+                const activeProviders = Object.values(this.data.providers)
+                    .filter(p => p.status === 'online').length;
+                document.getElementById('activeProviders').textContent = activeProviders;
+
+                // Update provider cards
+                this.updateProviderCards(calls);
+                
+                // Update chart
+                this.generateChart();
+            }
+
+            updateProviderCards(calls) {
+                Object.keys(this.data.providers).forEach(providerName => {
+                    const provider = this.data.providers[providerName];
+                    const providerCalls = calls.filter(c => c.provider === providerName);
+                    const successfulCalls = providerCalls.filter(c => c.success);
+                    
+                    const requests = providerCalls.length;
+                    const successRate = requests > 0 ? Math.round((successfulCalls.length / requests) * 100) : 0;
+                    const avgLatency = successfulCalls.length > 0 
+                        ? Math.round(successfulCalls.reduce((sum, c) => sum + c.responseTime, 0) / successfulCalls.length)
+                        : 0;
+
+                    document.getElementById(`${providerName.replace('_', '')}-requests`).textContent = requests;
+                    document.getElementById(`${providerName.replace('_', '')}-success`).textContent = successRate + '%';
+                    document.getElementById(`${providerName.replace('_', '')}-latency`).textContent = avgLatency + 'ms';
+                    
+                    // Update progress bar based on usage
+                    const maxRequests = Math.max(...Object.keys(this.data.providers).map(p => 
+                        calls.filter(c => c.provider === p).length
+                    )) || 1;
+                    const progress = (requests / maxRequests) * 100;
+                    document.getElementById(`${providerName.replace('_', '')}-progress`).style.width = progress + '%';
+                });
+            }
+
+            generateChart() {
+                const chartContainer = document.getElementById('requestsChart');
+                chartContainer.innerHTML = '';
+
+                const calls = this.getFilteredCalls();
+                const now = Date.now();
+                const timeRanges = {
+                    '1h': { interval: 5 * 60 * 1000, bars: 12 }, // 5-minute intervals
+                    '24h': { interval: 60 * 60 * 1000, bars: 24 }, // 1-hour intervals
+                    '7d': { interval: 24 * 60 * 60 * 1000, bars: 7 }, // 1-day intervals
+                    '30d': { interval: 24 * 60 * 60 * 1000, bars: 30 } // 1-day intervals
+                };
+
+                const { interval, bars } = timeRanges[this.timeRange];
+                const maxHeight = 250;
+
+                let maxCalls = 0;
+                const chartData = [];
+
+                for (let i = bars - 1; i >= 0; i--) {
+                    const endTime = now - (i * interval);
+                    const startTime = endTime - interval;
+                    
+                    const periodCalls = calls.filter(c => 
+                        c.timestamp >= startTime && c.timestamp < endTime
+                    ).length;
+                    
+                    chartData.push(periodCalls);
+                    maxCalls = Math.max(maxCalls, periodCalls);
+                }
+
+                chartData.forEach((callCount, index) => {
+                    const bar = document.createElement('div');
+                    bar.className = 'chart-bar';
+                    bar.style.height = maxCalls > 0 ? (callCount / maxCalls) * maxHeight + 'px' : '2px';
+                    bar.title = `${callCount} calls`;
+                    chartContainer.appendChild(bar);
+                });
+            }
+
+            addActivityItem(call) {
+                const feed = document.getElementById('activityFeed');
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+
+                const iconClass = call.success ? 'activity-success' : 'activity-error';
+                const icon = call.success ? '✅' : '❌';
+                const providerName = call.provider.replace('_', ' ').toUpperCase();
+
+                item.innerHTML = `
+                    <div class="activity-icon ${iconClass}">${icon}</div>
+                    <div class="activity-content">
+                        <div>${providerName} - ${call.success ? 'Success' : 'Failed'}</div>
+                        <div>Response time: ${call.responseTime}ms | Complexity: ${call.complexity}</div>
+                        ${call.error ? `<div style="color: #ef4444;">Error: ${call.error}</div>` : ''}
+                    </div>
+                    <div class="activity-time">${new Date(call.timestamp).toLocaleTimeString()}</div>
+                `;
+
+                feed.insertBefore(item, feed.firstChild);
+
+                // Keep only last 20 items visible
+                while (feed.children.length > 20) {
+                    feed.removeChild(feed.lastChild);
+                }
+            }
+
+            startRealTimeUpdates() {
+                this.updateInterval = setInterval(() => {
+                    this.updateDashboard();
+                }, 5000); // Update every 5 seconds
+            }
+
+            setTimeRange(range) {
+                this.timeRange = range;
+                
+                // Update button states
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                this.updateDashboard();
+            }
+
+            exportData() {
+                const exportData = {
+                    timestamp: new Date().toISOString(),
+                    timeRange: this.timeRange,
+                    calls: this.getFilteredCalls(),
+                    providers: this.data.providers,
+                    summary: {
+                        totalCalls: this.getFilteredCalls().length,
+                        successRate: this.getFilteredCalls().filter(c => c.success).length / this.getFilteredCalls().length,
+                        activeProviders: Object.values(this.data.providers).filter(p => p.status === 'online').length
+                    }
+                };
+
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `provider-analytics-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            clearData() {
+                if (confirm('Are you sure you want to clear all analytics data? This action cannot be undone.')) {
+                    localStorage.removeItem('provider_analytics');
+                    this.data = this.loadData();
+                    this.updateDashboard();
+                    document.getElementById('activityFeed').innerHTML = '';
+                }
+            }
+
+            // Simulate some data for demo
+            simulateData() {
+                const providers = ['enhanced_template', 'ollama_local', 'gemini_free', 'huggingface'];
+                const now = Date.now();
+                
+                for (let i = 0; i < 50; i++) {
+                    const timestamp = now - Math.random() * 24 * 60 * 60 * 1000;
+                    const provider = providers[Math.floor(Math.random() * providers.length)];
+                    const success = Math.random() > 0.1; // 90% success rate
+                    const responseTime = Math.random() * 2000 + 100;
+                    
+                    this.recordProviderCall({
+                        provider,
+                        success,
+                        responseTime,
+                        complexity: Math.random() > 0.5 ? 'simple' : 'complex'
+                    });
+                }
+            }
+        }
+
+        // Global functions for buttons
+        function setTimeRange(range) {
+            analytics.setTimeRange(range);
+        }
+
+        function exportData() {
+            analytics.exportData();
+        }
+
+        function clearData() {
+            analytics.clearData();
+        }
+
+        // Initialize dashboard
+        const analytics = new ProviderAnalytics();
+
+        // Demo data only if no existing data
+        if (analytics.data.calls.length === 0) {
+            console.log('No existing data found, generating demo data...');
+            analytics.simulateData();
+        }
+
+        console.log('Provider Analytics Dashboard loaded successfully!');
+        console.log('Connect this dashboard to your main app by sending postMessage events');
+    </script>
+</body>
+</html>

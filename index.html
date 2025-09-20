@@ -9,7 +9,25 @@
     <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQUkgTWVldGluZyBOb3RlcyIsInNob3J0X25hbWUiOiJBSU1lZXRpbmciLCJzdGFydF91cmwiOiIuLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwidGhlbWVfY29sb3IiOiIjM2I4MmY2IiwiYmFja2dyb3VuZF9jb2xvciI6IiNmOGZhZmMiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTWpRaUlHaGxhV2RvZEQwaU1qUWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lnWm1sc2JEMGlJek5pT0RKbU5pSStQR05wY21Oc1pTQmplRDBpTVRJaUlHTjVQU0l4TWlJZ2NqMGlPU0krUEM5amFYSmpiR1UrUEM5emRtYysiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
     <meta name="theme-color" content="#3b82f6">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyD0yAOVQsfJqY68K4oIRTm3ai-5j4tteQk",
+          authDomain: "ai-transcript-analytics.firebaseapp.com",
+          projectId: "ai-transcript-analytics",
+          storageBucket: "ai-transcript-analytics.firebasestorage.app",
+          messagingSenderId: "520410492515",
+          appId: "1:520410492515:web:9110b46f08c46d360e1256"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+      </script>
     <style>
         * {
             margin: 0;
@@ -40,6 +58,82 @@
             backdrop-filter: blur(8px);
         }
         
+        /* Privacy Consent Styles - ADD TO EXISTING CSS */
+.privacy-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.privacy-banner {
+    background: white;
+    max-width: 600px;
+    margin: 1rem;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.privacy-header {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.privacy-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.privacy-content {
+    padding: 2rem;
+}
+
+.privacy-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.privacy-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 0.875rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.privacy-btn-accept {
+    background: #10b981;
+    color: white;
+}
+
+.privacy-btn-decline {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.app-blurred {
+    filter: blur(3px);
+    pointer-events: none;
+}
+
         .header {
             padding: 2rem;
             background: linear-gradient(135deg, #3b82f6, #1d4ed8);
@@ -549,6 +643,29 @@
     </style>
 </head>
 <body>
+    <!-- Privacy Consent Overlay - ADD AFTER <body> -->
+<div id="privacyOverlay" class="privacy-overlay">
+    <div class="privacy-banner">
+        <div class="privacy-header">
+            <h2 class="privacy-title">🛡️ Privacy & Analytics Consent</h2>
+            <p>We need your consent to collect anonymous usage statistics</p>
+        </div>
+        <div class="privacy-content">
+            <p><strong>What we collect:</strong> Provider performance, response times, error logs</p>
+            <p><strong>What we DON'T collect:</strong> Your transcript content, personal information</p>
+            <div class="privacy-buttons">
+                <button class="privacy-btn privacy-btn-accept" onclick="acceptPrivacy()">
+                    ✓ Accept Analytics
+                </button>
+                <button class="privacy-btn privacy-btn-decline" onclick="declinePrivacy()">
+                    ✗ Essential Only
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Main content -->
+
     <div class="container">
         <!-- Header -->
         <div class="card">
@@ -706,9 +823,68 @@ Example:
             <div style="font-size: 0.75rem; opacity: 0.8;">
                 Open source project • Deploy anywhere • Zero vendor lock-in • <a href="https://github.com/your-username/ai-meeting-tool" style="color: #3b82f6;" target="_blank">GitHub</a>
             </div>
+            <button onclick="openDashboard()" class="btn btn-secondary">
+                📊 Analytics
+            </button>
         </div>
     </div>
 
     <script src="js/app.js"></script>
+    <script>
+        // Privacy Consent Manager - ADD TO BEGINNING OF SCRIPT
+class PrivacyManager {
+    constructor() {
+        this.consent = localStorage.getItem('privacy_consent');
+        this.init();
+    }
+    
+    init() {
+        if (this.consent) {
+            this.enableApp();
+        } else {
+            this.showBanner();
+        }
+    }
+    
+    showBanner() {
+        document.getElementById('privacyOverlay').style.display = 'flex';
+        document.querySelector('.container').classList.add('app-blurred');
+    }
+    
+    hideBanner() {
+        document.getElementById('privacyOverlay').style.display = 'none';
+        document.querySelector('.container').classList.remove('app-blurred');
+    }
+    
+    enableApp() {
+        this.hideBanner();
+        window.analyticsEnabled = this.consent === 'accepted';
+    }
+    
+    accept() {
+        localStorage.setItem('privacy_consent', 'accepted');
+        this.consent = 'accepted';
+        this.enableApp();
+    }
+    
+    decline() {
+        localStorage.setItem('privacy_consent', 'declined');
+        this.consent = 'declined';
+        this.enableApp();
+    }
+}
+
+// Global functions for buttons
+function acceptPrivacy() {
+    privacyManager.accept();
+}
+
+function declinePrivacy() {
+    privacyManager.decline();
+}
+
+// Initialize privacy manager
+const privacyManager = new PrivacyManager();
+    </script>
 </body>
 </html>
